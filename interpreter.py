@@ -58,11 +58,24 @@ def main():
         return
 
     # Start chat
-    print("👋 Hi there! I am a helful coding assistant")
-    prompt = input("Ask me a question:\n")
+    print("\n")
+    print("👋 Hi there! I am a helpful coding assistant!")
+    print("You can ask me questions about our codebase.")
+    print("When you are all done, type 'bye!' to exit.")
 
-    # Print response
-    print(ask_ai(api_key, embeddings_model, chat_model, prompt))
+    # loop until user exits
+    while True:
+        # Get user input
+        prompt = input("\nAsk me a question:\n")
+        print("\n")
+
+        if prompt.lower() == "bye!":
+            # Exit if user types "exit"
+            print("Goodbye!")
+            break
+        else:
+            # Print response
+            print(ask_ai(api_key, embeddings_model, chat_model, prompt))
 
 
 if __name__ == "__main__":
