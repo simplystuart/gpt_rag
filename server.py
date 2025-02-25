@@ -21,7 +21,7 @@ def ask_codebase(prompt, top_k=5, filter=None):
         allow_dangerous_deserialization=True
     )
 
-    documents = vector_db.similarity_search(prompt, top_k=top_k)
+    documents = vector_db.similarity_search(prompt, top_k=top_k, filter=filter)
 
     for doc in documents:
         results.append({
