@@ -17,18 +17,27 @@ def get_files():
     return result.stdout.strip().split("\n")
 
 
+def map_file_metadata(file):
+    return {
+        "source": file,
+        "filename": os.path.basename(file),
+        "file_extension": os.path.splitext(file)[1],
+        "file_path": os.path.dirname(os.path.abspath(file)),
+        "last_modified": os.path.getmtime(file),
+    }
+
+
 def build_docs(files):
     documents = []
-
     for file in files:
         # Read text files; skip others
         try:
             with open(file, "r", encoding="utf-8") as f:
-                documents.append({"text": f.read(), "source": file})
+                metadata = map_file_metadata(file)
+                documents.append({"text": f.read(), "metadata": metadata})
                 print(f"✅ Added {file}")
         except Exception as e:
             print(f"❌ Skipped {file}: {e}")
-
     return documents
 
 
@@ -36,11 +45,11 @@ def chunk_docs(docs):
     chunks = []
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=100)
-
     for doc in docs:
         splits = text_splitter.split_text(doc["text"])
-        chunks.extend([{"text": s, "source": doc["source"]} for s in splits])
-
+        # Preserve all metadata for each chunk
+        chunks.extend([{"text": s, "metadata": doc["metadata"]}
+                      for s in splits])
     return chunks
 
 
@@ -59,10 +68,15 @@ def estimate_usage(token_cost, chunks):
 
 
 def embed_chunks(key, model, chunks):
-    # Store chunks from OpenAI embeddings in FAISS
+    # Store chunks from OpenAI embeddings with metadata in FAISS
     embeddings_model = OpenAIEmbeddings(model=model, openai_api_key=key)
-    vector_db = FAISS.from_texts([chunk["text"]
-                                 for chunk in chunks], embeddings_model)
+
+    # Send both texts and metadatas to FAISS
+    texts = [chunk["text"] for chunk in chunks]
+    metadatas = [chunk["metadata"] for chunk in chunks]
+
+    # Save vector store
+    vector_db = FAISS.from_texts(texts, embeddings_model, metadatas=metadatas)
     vector_db.save_local("faiss_code_index")
 
 
