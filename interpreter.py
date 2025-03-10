@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -6,10 +7,10 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 
 
-def ask_codebase(api_key, model, prompt, top_k=5):
+def ask_codebase(api_key, model, codebase, prompt, top_k=5):
     # Load codebase embeddings from FAISS
     vector_db = FAISS.load_local(
-        "faiss_code_index",
+        f'./data/{codebase}',
         OpenAIEmbeddings(openai_api_key=api_key, model=model),
         allow_dangerous_deserialization=True
     )
@@ -19,9 +20,9 @@ def ask_codebase(api_key, model, prompt, top_k=5):
     return "".join([r.page_content for r in results])
 
 
-def ask_ai(api_key, embeddings_model, chat_model, prompt):
+def ask_ai(api_key, embeddings_model, chat_model, codebase, prompt):
     client = OpenAI(api_key=api_key)
-    context = ask_codebase(api_key, embeddings_model, prompt)
+    context = ask_codebase(api_key, embeddings_model, codebase, prompt)
 
     # Create chat messages with context
     content = '''\
@@ -57,6 +58,13 @@ def main():
         print(f"Error loading config: {e}")
         return
 
+    # Check for codebase
+    if (len(sys.argv) < 2):
+        print("Usage: python interpreter.py <codebase>")
+        return
+    else:
+        codebase = sys.argv[1]
+
     # Start chat
     print("\n")
     print("👋 Hi there! I am a helpful coding assistant!")
@@ -75,7 +83,9 @@ def main():
             break
         else:
             # Print response
-            print(ask_ai(api_key, embeddings_model, chat_model, prompt))
+            print(
+                ask_ai(api_key, embeddings_model, chat_model, codebase, prompt)
+            )
 
 
 if __name__ == "__main__":
