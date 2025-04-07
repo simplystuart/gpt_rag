@@ -12,11 +12,11 @@ app = Flask(__name__)
 embeddings_model = os.getenv("OPENAI_EMBEDDINGS_MODEL_ID")
 
 
-def ask_codebase(prompt, top_k=5, filter=None):
+def ask_codebase(codebase, prompt, top_k=5, filter=None):
     results = []
 
     vector_db = FAISS.load_local(
-        "faiss_code_index",
+        f'./data/{codebase}',
         OpenAIEmbeddings(openai_api_key=api_key, model=embeddings_model),
         allow_dangerous_deserialization=True
     )
@@ -37,8 +37,8 @@ def handle_index():
     return jsonify({'status': 'success'})
 
 
-@app.route('/query', methods=['POST'])
-def handle_query():
+@app.route('/query/<codebase>', methods=['POST'])
+def handle_query(codebase):
     data = request.get_json()
 
     if not data or 'query' not in data:
@@ -48,12 +48,13 @@ def handle_query():
     top_k = data.get('top_k', 5)
     filter = data.get('filter', None)
 
-    results = ask_codebase(data['query'], top_k=top_k, filter=filter)
+    results = ask_codebase(codebase, data['query'], top_k=top_k, filter=filter)
 
     result = {
+        'codebase': codebase,
         'message': f'Found {len(results)} results',
         'query': query,
-        'results': ask_codebase(query),
+        'results': results,
         'status': 'success',
     }
 
