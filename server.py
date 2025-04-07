@@ -39,9 +39,10 @@ def handle_index():
 
 @app.route("/codebases", methods=['GET'])
 def handle_codebases():
-    codebases = os.listdir('./data')
-    return jsonify(codebases)
-
+    try:
+        codebases = os.listdir('./data')
+    except OSError as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/query/<codebase>', methods=['POST'])
 def handle_query(codebase):
