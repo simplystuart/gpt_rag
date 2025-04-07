@@ -38,6 +38,7 @@ To use ChatGPT with locally running server use `ngrok`.
 ### Step 3: Create Custom GPT
 
 Create an action to your `ngrok` endpoint with the schema in `action_schema.json` (replace `YOUR_NGROK_ENDPOINT`).
+
 ### Step 4
 
 Chat with your custom GPT
