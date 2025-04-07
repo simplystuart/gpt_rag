@@ -37,6 +37,12 @@ def handle_index():
     return jsonify({'status': 'success'})
 
 
+@app.route("/codebases", methods=['GET'])
+def handle_codebases():
+    codebases = os.listdir('./data')
+    return jsonify(codebases)
+
+
 @app.route('/query/<codebase>', methods=['POST'])
 def handle_query(codebase):
     data = request.get_json()
