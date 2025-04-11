@@ -15,8 +15,8 @@ cp .env.example .env
 
 2. Add `OPENAI_API_KEY` to `.env`
 
-[!NOTE]
-The embedder script will estimate usage and prompt for approval before using APIs
+> [!NOTE]
+> The embedder script will estimate usage and prompt for approval before using APIs
 
 ## Usage
 
@@ -32,8 +32,8 @@ python embedder.py [RELATIVE PATH TO REPO]
 python server.py
 ```
 
-[!IMPORTANT]
-To use ChatGPT with locally running server use `ngrok`.
+> [!IMPORTANT]
+> To use ChatGPT with locally running server use `ngrok`.
 
 ### Step 3: Create Custom GPT
 
