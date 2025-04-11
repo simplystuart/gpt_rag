@@ -53,6 +53,8 @@ def handle_query():
     if not data or 'query' not in data:
         return jsonify({'error': 'Missing query parameter'}), 400
 
+    if 'codebase' not in data:
+        return jsonify({'error': 'Missing codebase parameter'}), 400
     codebase = data['codebase']
     query = data['query']
     top_k = data.get('top_k', 12)
