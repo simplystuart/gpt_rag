@@ -1,0 +1,219 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Code Search API",
+    "description": "API for searching a codebase using vector embeddings",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "servers": [
+    {
+      "url": "YOUR_SERVER_URL",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Simple endpoint to verify the API is running",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Server is running successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/codebases": {
+      "get": {
+        "summary": "List available codebases",
+        "description": "Returns a list of codebases available for searching",
+        "operationId": "listCodebases",
+        "responses": {
+          "200": {
+            "description": "Successful response with codebase list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "post": {
+        "summary": "Query the codebase",
+        "description": "Sends a natural language query and returns relevant code snippets from the vector database",
+        "operationId": "queryCodebase",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful query response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, missing query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          }
+        }
+      },
+      "QueryRequest": {
+        "type": "object",
+        "required": [
+          "codebase",
+          "query"
+        ],
+        "properties": {
+          "codebase": {
+            "type": "string",
+            "description": "The repo to search in, specified as the local server dir",
+            "example": "gpt_rag"
+          },
+          "query": {
+            "type": "string",
+            "description": "The natural language query to search in the codebase",
+            "example": "How do I authenticate users?"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Number of results to return",
+            "default": 5,
+            "example": 5
+          },
+          "filter": {
+            "type": "object",
+            "description": "Optional filter criteria to apply to search results",
+            "nullable": true,
+            "example": {
+              "file_type": "python",
+              "directory": "src/auth"
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "QueryResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string",
+            "example": "Found 5 results"
+          },
+          "query": {
+            "type": "string",
+            "example": "How do I authenticate users?"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "page_content": {
+            "type": "string",
+            "description": "The code snippet or content found",
+            "example": "def authenticate_user(username, password):\n    # Authentication logic\n    return user_object"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata about the code snippet",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Source file path",
+                "example": "/app/auth/users.py"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Missing query parameter"
+          }
+        }
+      }
+    }
+  }
+}

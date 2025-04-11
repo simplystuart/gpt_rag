@@ -37,15 +37,27 @@ def handle_index():
     return jsonify({'status': 'success'})
 
 
-@app.route('/query/<codebase>', methods=['POST'])
-def handle_query(codebase):
+@app.route("/codebases", methods=['GET'])
+def handle_codebases():
+    try:
+        codebases = [f for f in os.listdir('./data') if not f.startswith('.')]
+    except OSError as e:
+        return jsonify({'error': str(e)}), 500
+    return jsonify(codebases)
+
+
+@app.route('/query', methods=['POST'])
+def handle_query():
     data = request.get_json()
 
     if not data or 'query' not in data:
         return jsonify({'error': 'Missing query parameter'}), 400
 
+    if 'codebase' not in data:
+        return jsonify({'error': 'Missing codebase parameter'}), 400
+    codebase = data['codebase']
     query = data['query']
-    top_k = data.get('top_k', 5)
+    top_k = data.get('top_k', 12)
     filter = data.get('filter', None)
 
     results = ask_codebase(codebase, data['query'], top_k=top_k, filter=filter)
